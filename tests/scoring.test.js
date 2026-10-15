@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
+import "../js/model.js";
+import "../js/games.js";
+
+const {
   applyRound,
   cancelMatch,
   competitionPhase,
@@ -10,9 +13,13 @@ import {
   parseStored,
   resetStatistics,
   startMatch,
-  updateSettings
-} from "../js/model.js";
-import { beginRps, judgeRps, resolveCoin } from "../js/games.js";
+  updateSettings,
+  beginRps,
+  judgeRps,
+  resolveCoin,
+  resolveDice,
+  beginChests
+} = globalThis.ManVsPc;
 
 function team(ids, disabled = []) {
   return {
@@ -188,4 +195,35 @@ test("монета: компьютер на противоположной ст�
   const tails = resolveCoin("heads", () => 0.9);
   assert.equal(tails.flip, "tails");
   assert.equal(tails.winner, "computer");
+});
+
+test("кубики: большее значение побеждает, равные — ничья", () => {
+  const human = resolveDice(() => 0.9);
+  assert.equal(human.human, 6);
+  assert.equal(human.computer, 6);
+  assert.equal(human.winner, "draw");
+  let step = 0;
+  const mixed = resolveDice(() => (step++ === 0 ? 0 : 0.9));
+  assert.equal(mixed.human, 1);
+  assert.equal(mixed.computer, 6);
+  assert.equal(mixed.winner, "computer");
+  step = 0;
+  const pupil = resolveDice(() => (step++ === 0 ? 0.5 : 0));
+  assert.equal(pupil.human, 4);
+  assert.equal(pupil.computer, 1);
+  assert.equal(pupil.winner, "human");
+});
+
+test("сундуки: компьютер выбран до человека, золото только у одного", () => {
+  const same = beginChests(() => 0);
+  assert.equal(same.treasure, 0);
+  assert.equal(same.computer, 0);
+  assert.equal(same.play(0).winner, "draw");
+  assert.equal(same.play(1).winner, "computer");
+  let step = 0;
+  const missed = beginChests(() => (step++ === 0 ? 0 : 0.9));
+  assert.equal(missed.treasure, 0);
+  assert.equal(missed.computer, 2);
+  assert.equal(missed.play(1).winner, "draw");
+  assert.equal(missed.play(0).winner, "human");
 });

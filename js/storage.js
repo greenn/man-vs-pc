@@ -1,6 +1,6 @@
-import { STORAGE_KEY, createState, parseStored } from "./model.js";
-
-export function loadState(preset) {
+(() => {
+function loadState(preset) {
+  const { STORAGE_KEY, createState, parseStored } = globalThis.ManVsPc;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { state: createState(preset), notice: "" };
@@ -20,11 +20,14 @@ export function loadState(preset) {
   }
 }
 
-export function saveState(state) {
+function saveState(state) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(globalThis.ManVsPc.STORAGE_KEY, JSON.stringify(state));
     return true;
   } catch {
     return false;
   }
 }
+
+Object.assign(globalThis.ManVsPc, { loadState, saveState });
+})();

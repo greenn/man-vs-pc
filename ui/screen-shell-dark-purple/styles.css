@@ -330,6 +330,12 @@ button:focus-visible, a:focus-visible, input:focus-visible {
     radial-gradient(circle at 80% 30%, rgba(58, 215, 255, 0.28), transparent 42%),
     linear-gradient(160deg, #241848, #10182e 60%, #1a2748);
 }
+.art-dice {
+  background: #120a22 url("../../assets/sprites/games/03-dice-duel/icon.png") center / contain no-repeat;
+}
+.art-chests {
+  background: #120a22 url("../../assets/sprites/games/08-three-chests/closed.png") center / contain no-repeat;
+}
 .art-coin span:first-child { filter: drop-shadow(0 0 12px rgba(255, 180, 40, 0.8)); }
 .art-coin span:last-child { filter: drop-shadow(0 0 12px rgba(180, 200, 255, 0.7)); }
 .game-card h3 { margin: 0 0 6px; font-size: 22px; }
@@ -350,6 +356,7 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 .play-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; }
 .choice-row { grid-template-columns: repeat(3, 1fr); }
 .choice-row.two { grid-template-columns: 1fr 1fr; }
+.choice-row.one { grid-template-columns: minmax(220px, 420px); justify-content: center; }
 .choice {
   min-height: 120px;
   border-radius: 18px;
@@ -377,6 +384,18 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   font-weight: 800;
   background: var(--card-2);
   border: 1px solid var(--line);
+}
+.chest-choice { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.chest-choice img { width: 128px; height: 128px; object-fit: contain; }
+.chest-choice.is-gold { border-color: var(--gold); box-shadow: 0 0 24px rgba(255, 196, 60, 0.35); }
+.die-slot { display: grid; justify-items: center; gap: 8px; }
+.die-slot strong { font-size: 42px; line-height: 1; }
+.die { width: 180px; height: 180px; object-fit: contain; }
+.die.is-spin { animation: die-spin 0.7s linear; }
+@keyframes die-spin {
+  from { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(0.72); }
+  to { transform: rotate(360deg) scale(1); }
 }
 .token.spin { animation: flip 0.7s linear; }
 @keyframes flip {

@@ -1,14 +1,15 @@
-import {
+(() => {
+const {
   GAMES,
   GAME_IDS,
   RPS,
   RPS_LABEL,
   beginRps,
+  beginChests,
   fairUnit,
   gameById,
-  resolveCoin
-} from "./games.js";
-import {
+  resolveCoin,
+  resolveDice,
   activeParticipants,
   applyRound,
   cancelMatch,
@@ -25,9 +26,10 @@ import {
   setAvatar,
   setDisabled,
   startMatch,
-  updateSettings
-} from "./model.js";
-import { loadState, saveState } from "./storage.js";
+  updateSettings,
+  loadState,
+  saveState
+} = globalThis.ManVsPc;
 
 const app = document.querySelector("#app");
 const NAV = [
@@ -326,7 +328,7 @@ function screenGames() {
         <div class="game-grid">
           ${GAMES.map((item) => `
             <button class="game-card ${item.id === game.id ? "is-on" : ""}" data-action="select-game" data-game="${item.id}">
-              <div class="art ${item.id.includes("coin") ? "art-coin" : "art-rps"}">${item.id.includes("coin") ? "<span>🌕</span><span>🪙</span>" : "<span>✊</span><span>✌️</span><span>✋</span>"}</div>
+              <div class="art ${gameArtClass(item.id)}">${gameArtMarkup(item.id)}</div>
               <h3>${esc(item.title)}</h3>
               <p>${esc(item.summary)}</p>
               <div class="tags">${item.tags.map((tag) => `<span class="pill">${esc(tag)}</span>`).join("")}<span class="pill">Матч до ${state.settings.matchWins}</span></div>
@@ -373,6 +375,19 @@ function screenIntro() {
     </div>`;
 }
 
+function gameArtClass(id) {
+  if (id.includes("coin")) return "art-coin";
+  if (id.includes("dice")) return "art-dice";
+  if (id.includes("chests")) return "art-chests";
+  return "art-rps";
+}
+
+function gameArtMarkup(id) {
+  if (id.includes("coin")) return "<span>🌕</span><span>🪙</span>";
+  if (id.includes("dice") || id.includes("chests")) return "";
+  return "<span>✊</span><span>✌️</span><span>✋</span>";
+}
+
 function outcomeWord(winner) {
   if (winner === "human") return ["Победа ученика", "human"];
   if (winner === "computer") return ["Победа компьютера", "computer"];
@@ -387,11 +402,42 @@ function screenPlay() {
   const [word, tone] = view.reveal ? outcomeWord(view.reveal.winner) : ["", ""];
   const moves = match.gameId === "02-coin-toss"
     ? [["heads", "Орёл"], ["tails", "Решка"]]
-    : RPS.map((id) => [id, RPS_LABEL[id]]);
+    : match.gameId === "03-dice-duel"
+      ? [["roll", "Бросить"]]
+      : match.gameId === "08-three-chests"
+        ? []
+        : RPS.map((id) => [id, RPS_LABEL[id]]);
   let board = "";
-  if (view.phase === "choose") {
-    board = `<div class="choice-row ${moves.length === 2 ? "two" : ""}">${moves.map(([id, label]) =>
+  if (match.gameId === "08-three-chests") {
+    const opening = view.phase !== "choose";
+    const reveal = view.reveal;
+    board = `<div class="choice-row">${[0, 1, 2].map((index) => {
+      const open = view.phase === "reveal";
+      const src = !open
+        ? "assets/sprites/games/08-three-chests/closed.png"
+        : (index === reveal.treasure ? "assets/sprites/games/08-three-chests/gold.png" : "assets/sprites/games/08-three-chests/empty.png");
+      const marks = [];
+      if (open && index === reveal.human) marks.push("ученик");
+      if (open && index === reveal.computer) marks.push("компьютер");
+      const label = marks.join(" · ") || String(index + 1);
+      const gold = open && index === reveal.treasure ? " is-gold" : "";
+      if (!opening) {
+        return `<button class="choice chest-choice" data-action="move" data-move="${index}"><img src="${src}" alt=""><span>${label}</span></button>`;
+      }
+      return `<div class="choice chest-choice${gold}"><img class="${view.phase === "spin" ? "is-spin" : ""}" src="${src}" alt=""><span>${view.phase === "spin" ? String(index + 1) : label}</span></div>`;
+    }).join("")}</div>`;
+  } else if (view.phase === "choose") {
+    board = `<div class="choice-row ${moves.length === 2 ? "two" : moves.length === 1 ? "one" : ""}">${moves.map(([id, label]) =>
       `<button class="choice" data-action="move" data-move="${id}">${esc(label)}</button>`).join("")}</div>`;
+  } else if (match.gameId === "03-dice-duel" && view.reveal) {
+    const spinning = view.phase === "spin";
+    const die = (side, value) => {
+      const file = spinning
+        ? "assets/sprites/games/03-dice-duel/spin.png"
+        : `assets/sprites/games/03-dice-duel/face-${side}-${value}.png`;
+      return `<div class="die-slot"><img class="die ${spinning ? "is-spin" : ""}" src="${file}" alt="">${spinning ? "" : `<strong>${value}</strong>`}</div>`;
+    };
+    board = `<div class="reveal-board">${die("human", view.reveal.human)}<div class="vs-word">VS</div>${die("computer", view.reveal.computer)}</div>`;
   } else if (match.gameId === "02-coin-toss") {
     const flip = view.reveal?.flip === "heads" ? "Орёл" : "Решка";
     board = `<div class="reveal-board"><div class="token">Ваш выбор<br>${view.reveal.humanSide === "heads" ? "Орёл" : "Решка"}</div><div class="token ${view.phase === "spin" ? "spin" : ""}">${view.phase === "spin" ? "…" : flip}</div><div class="token">Компьютер<br>${view.reveal.computerSide === "heads" ? "Орёл" : "Решка"}</div></div>`;
@@ -564,7 +610,9 @@ function prepareRound() {
   view.phase = "choose";
   view.reveal = null;
   view.roundStartedAt = Date.now();
-  view.secret = state.match?.gameId === "01-rock-paper-scissors" ? beginRps(fairUnit) : null;
+  if (state.match?.gameId === "01-rock-paper-scissors") view.secret = beginRps(fairUnit);
+  else if (state.match?.gameId === "08-three-chests") view.secret = beginChests(fairUnit);
+  else view.secret = null;
 }
 
 function onMove(move) {
@@ -580,6 +628,43 @@ function onMove(move) {
     });
     view.secret = null;
     persist();
+    return;
+  }
+  if (state.match.gameId === "08-three-chests") {
+    const result = view.secret.play(move);
+    applyRound(state, {
+      winner: result.winner,
+      elapsedMs: Date.now() - view.roundStartedAt,
+      detail: { human: result.human, computer: result.computer, treasure: result.treasure }
+    });
+    view.reveal = result;
+    view.secret = null;
+    view.phase = "spin";
+    if (!saveState(state)) view.notice = "Не удалось записать данные в браузер.";
+    render();
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      view.phase = "reveal";
+      render();
+    }, 700);
+    return;
+  }
+  if (state.match.gameId === "03-dice-duel") {
+    const result = resolveDice(fairUnit);
+    applyRound(state, {
+      winner: result.winner,
+      elapsedMs: Date.now() - view.roundStartedAt,
+      detail: { human: result.human, computer: result.computer }
+    });
+    view.reveal = result;
+    view.phase = "spin";
+    if (!saveState(state)) view.notice = "Не удалось записать данные в браузер.";
+    render();
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      view.phase = "reveal";
+      render();
+    }, 700);
     return;
   }
   const result = resolveCoin(move, fairUnit);
@@ -735,14 +820,10 @@ function onClick(event) {
 
 document.addEventListener("click", onClick);
 
-async function boot() {
-  let preset;
-  try {
-    const response = await fetch("assets/data/team-6.json");
-    if (!response.ok) throw new Error("preset");
-    preset = await response.json();
-  } catch {
-    app.innerHTML = `<main class="stage"><h2>Не найден список класса</h2><p>Откройте приложение через OpenServer, чтобы подтянулся файл assets/data/team-6.json.</p></main>`;
+function boot() {
+  const preset = globalThis.TEAM_PRESET;
+  if (!preset) {
+    app.innerHTML = `<main class="stage"><h2>Не найден список класса</h2><p>Рядом со страницей должен лежать файл assets/data/team-6.js.</p></main>`;
     return;
   }
   const loaded = loadState(preset);
@@ -761,3 +842,4 @@ async function boot() {
 }
 
 boot();
+})();

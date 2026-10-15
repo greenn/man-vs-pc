@@ -1,7 +1,8 @@
-export const SCHEMA_VERSION = 1;
-export const STORAGE_KEY = "man-vs-pc";
+(() => {
+const SCHEMA_VERSION = 1;
+const STORAGE_KEY = "man-vs-pc";
 
-export function emptySession() {
+function emptySession() {
   return {
     humanWins: 0,
     computerWins: 0,
@@ -11,7 +12,7 @@ export function emptySession() {
   };
 }
 
-export function emptyLifetime() {
+function emptyLifetime() {
   return {
     humanWins: 0,
     computerWins: 0,
@@ -24,7 +25,7 @@ function asBool(value) {
   return value === true || value === 1 || value === "1" || value === "true";
 }
 
-export function normalizeParticipant(raw) {
+function normalizeParticipant(raw) {
   if (!raw || typeof raw.id !== "string" || !raw.id.trim()) return null;
   const initials = String(raw.initials || "").trim();
   if (!initials) return null;
@@ -44,7 +45,7 @@ export function normalizeParticipant(raw) {
   };
 }
 
-export function assignAvatars(participants) {
+function assignAvatars(participants) {
   const used = new Set(
     participants.map((p) => p.avatarId).filter((id) => id != null)
   );
@@ -59,7 +60,7 @@ export function assignAvatars(participants) {
   return participants;
 }
 
-export function createState(teamInput) {
+function createState(teamInput) {
   const source = Array.isArray(teamInput?.participants) ? teamInput.participants : [];
   const participants = [];
   const seen = new Set();
@@ -90,20 +91,20 @@ function clampInt(value, min, max, fallback) {
   return Math.min(max, Math.max(min, n));
 }
 
-export function activeParticipants(state) {
+function activeParticipants(state) {
   return state.team.participants.filter((person) => !person.disabled);
 }
 
-export function playedIds(session) {
+function playedIds(session) {
   return new Set(session.matches.map((match) => match.participantId));
 }
 
-export function pendingParticipants(state) {
+function pendingParticipants(state) {
   const played = playedIds(state.session);
   return activeParticipants(state).filter((person) => !played.has(person.id));
 }
 
-export function competitionPhase(state) {
+function competitionPhase(state) {
   if (!activeParticipants(state).length) return "no-players";
   const waiting = pendingParticipants(state).length > 0;
   if (state.session.winnerLocked && !waiting) return "final";
@@ -111,7 +112,7 @@ export function competitionPhase(state) {
   return "ongoing";
 }
 
-export function maybeLock(session, goal) {
+function maybeLock(session, goal) {
   if (session.winnerLocked) return session.winnerLocked;
   const humanReached = session.humanWins >= goal;
   const computerReached = session.computerWins >= goal;
@@ -123,18 +124,18 @@ export function maybeLock(session, goal) {
   return session.winnerLocked;
 }
 
-export function findParticipant(state, id) {
+function findParticipant(state, id) {
   return state.team.participants.find((person) => person.id === id) || null;
 }
 
-export function setDisabled(state, id, disabled) {
+function setDisabled(state, id, disabled) {
   const person = findParticipant(state, id);
   if (!person) return { ok: false, error: "missing" };
   person.disabled = Boolean(disabled);
   return { ok: true };
 }
 
-export function setAvatar(state, id, avatarId) {
+function setAvatar(state, id, avatarId) {
   const person = findParticipant(state, id);
   const n = Number(avatarId);
   if (!person || !Number.isInteger(n) || n < 1 || n > 29) return { ok: false, error: "avatar" };
@@ -142,7 +143,7 @@ export function setAvatar(state, id, avatarId) {
   return { ok: true };
 }
 
-export function importTeam(state, data) {
+function importTeam(state, data) {
   const list = Array.isArray(data) ? data : data?.participants;
   if (!Array.isArray(list)) return { ok: false, error: "format" };
   const previous = new Map(state.team.participants.map((person) => [person.id, person]));
@@ -176,13 +177,13 @@ export function importTeam(state, data) {
   return { ok: true, count: participants.length };
 }
 
-export function pickRandom(items, rng = Math.random) {
+function pickRandom(items, rng = Math.random) {
   if (!items.length) return null;
   const index = Math.min(items.length - 1, Math.floor(rng() * items.length));
   return items[index];
 }
 
-export function startMatch(state, participantId, gameId, options = {}) {
+function startMatch(state, participantId, gameId, options = {}) {
   if (state.match?.status === "playing") return { ok: false, error: "busy" };
   const person = findParticipant(state, participantId);
   if (!person) return { ok: false, error: "missing" };
@@ -248,7 +249,7 @@ function recordMatch(state, now) {
   return { ok: true, matchFinished: true, winner };
 }
 
-export function applyRound(state, result, now = Date.now()) {
+function applyRound(state, result, now = Date.now()) {
   const match = state.match;
   if (!match || match.status !== "playing") return { ok: false, error: "no-match" };
   if (!result || !["human", "computer", "draw"].includes(result.winner)) {
@@ -271,18 +272,18 @@ export function applyRound(state, result, now = Date.now()) {
   return { ok: true, matchFinished: false };
 }
 
-export function cancelMatch(state, options = {}) {
+function cancelMatch(state, options = {}) {
   const id = state.match?.status === "playing" ? state.match.participantId : options.participantId;
   if (state.match?.status === "playing") state.match = null;
   if (options.disable && id) setDisabled(state, id, true);
   return { ok: true };
 }
 
-export function clearFinishedMatch(state) {
+function clearFinishedMatch(state) {
   if (state.match?.status === "finished") state.match = null;
 }
 
-export function updateSettings(state, patch, now = Date.now()) {
+function updateSettings(state, patch, now = Date.now()) {
   state.settings.matchWins = clampInt(patch.matchWins, 1, 99, state.settings.matchWins);
   state.settings.sessionGoal = clampInt(patch.sessionGoal, 1, 999, state.settings.sessionGoal);
   maybeLock(state.session, state.settings.sessionGoal);
@@ -293,17 +294,17 @@ export function updateSettings(state, patch, now = Date.now()) {
   return { ok: true, matchFinished: false };
 }
 
-export function newCompetition(state) {
+function newCompetition(state) {
   state.session = emptySession();
   state.match = null;
 }
 
-export function resetStatistics(state) {
+function resetStatistics(state) {
   newCompetition(state);
   state.lifetime = emptyLifetime();
 }
 
-export function participantStats(matches, id) {
+function participantStats(matches, id) {
   const own = matches.filter((match) => match.participantId === id);
   return {
     matches: own.length,
@@ -313,7 +314,7 @@ export function participantStats(matches, id) {
   };
 }
 
-export function hydrate(data) {
+function hydrate(data) {
   const state = createState(data.team || {});
   state.settings.matchWins = clampInt(data.settings?.matchWins, 1, 99, 2);
   state.settings.sessionGoal = clampInt(data.settings?.sessionGoal, 1, 999, 10);
@@ -364,7 +365,7 @@ export function hydrate(data) {
   return state;
 }
 
-export function parseStored(raw) {
+function parseStored(raw) {
   try {
     const data = JSON.parse(raw);
     if (!data || data.schemaVersion !== SCHEMA_VERSION || !Array.isArray(data.team?.participants)) {
@@ -375,3 +376,34 @@ export function parseStored(raw) {
     return { ok: false, reason: "corrupt" };
   }
 }
+
+Object.assign(globalThis.ManVsPc = globalThis.ManVsPc || {}, {
+  SCHEMA_VERSION,
+  STORAGE_KEY,
+  emptySession,
+  emptyLifetime,
+  normalizeParticipant,
+  assignAvatars,
+  createState,
+  activeParticipants,
+  playedIds,
+  pendingParticipants,
+  competitionPhase,
+  maybeLock,
+  findParticipant,
+  setDisabled,
+  setAvatar,
+  importTeam,
+  pickRandom,
+  startMatch,
+  applyRound,
+  cancelMatch,
+  clearFinishedMatch,
+  updateSettings,
+  newCompetition,
+  resetStatistics,
+  participantStats,
+  hydrate,
+  parseStored
+});
+})();

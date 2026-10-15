@@ -40,9 +40,10 @@
 
 ## Запуск
 
-Серверная часть не нужна. Откройте через OpenServer:
+Сервер не нужен. На интерактивной доске откройте файл `index.html` двойным щелчком или перетащите его в браузер:
 
-- приложение: `http://gg.nadube/man-vs-pc/`
-- прототип вёрстки: `http://gg.nadube/man-vs-pc/ui/screen-shell-dark-purple/`
+`file:///C:/S17/OpenServer/domains/gg.nadube/man-vs-pc/index.html`
 
-Страницы используют модули JavaScript, поэтому их нужно открывать по HTTP, а не двойным щелчком по файлу. Установка пакетов не требуется. Проверка счёта: `node --test tests/scoring.test.js`.
+Скрипты и список класса лежат рядом со страницей и подключаются обычными тегами `script`. Тот же файл открывается и через OpenServer: `http://gg.nadube/man-vs-pc/`.
+
+Прототип вёрстки: `ui/screen-shell-dark-purple/index.html`. Установка пакетов не требуется. Проверка счёта: `node --test tests/scoring.test.js`.
