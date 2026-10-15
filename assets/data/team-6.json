@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "teamId": "6",
+  "teamName": "6 класс",
+  "updatedAt": "2026-10-15",
+  "participants": [
+    { "id": "6-01", "initials": "АВ", "avatarId": null, "disabled": false },
+    { "id": "6-02", "initials": "АМ", "avatarId": null, "disabled": false },
+    { "id": "6-03", "initials": "БД", "avatarId": null, "disabled": false },
+    { "id": "6-04", "initials": "БС", "avatarId": null, "disabled": false },
+    { "id": "6-05", "initials": "ВЯ", "avatarId": null, "disabled": false },
+    { "id": "6-06", "initials": "КС", "avatarId": null, "disabled": true },
+    { "id": "6-07", "initials": "КО", "avatarId": null, "disabled": true },
+    { "id": "6-08", "initials": "КВ", "avatarId": null, "disabled": false },
+    { "id": "6-09", "initials": "НА", "avatarId": null, "disabled": true },
+    { "id": "6-10", "initials": "ПА", "avatarId": null, "disabled": false },
+    { "id": "6-11", "initials": "ПИ", "avatarId": null, "disabled": false },
+    { "id": "6-12", "initials": "РА", "avatarId": null, "disabled": false },
+    { "id": "6-13", "initials": "РО", "avatarId": null, "disabled": false },
+    { "id": "6-14", "initials": "СА", "avatarId": null, "disabled": false },
+    { "id": "6-15", "initials": "ТД", "avatarId": null, "disabled": false },
+    { "id": "6-16", "initials": "ФА", "avatarId": null, "disabled": true },
+    { "id": "6-17", "initials": "ФИ", "avatarId": null, "disabled": false },
+    { "id": "6-18", "initials": "ФД", "avatarId": null, "disabled": false },
+    { "id": "6-19", "initials": "ЦМ", "avatarId": null, "disabled": false },
+    { "id": "6-20", "initials": "ЦА", "avatarId": null, "disabled": false },
+    { "id": "6-21", "initials": "ЦД", "avatarId": null, "disabled": false }
+  ]
+}
