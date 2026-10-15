@@ -35,14 +35,16 @@
 **Файл:** `sprites/characters.png`. **30 персонажей, сетка 6×5**; ячейки одинаковые, например 512×512, итоговый холст 3072×2560.
 
 - Ячейка `0` (левый верхний угол) — **робот-компьютер**.
-- Ячейки `1–29` — разнообразные стилизованные человеческие персонажи без индивидуальных имён.
+- Ячейки `1–20` — **20 разных девочек**. Ячейки `21–29` — **9 разных мальчиков**. Имен и подписей нет.
 - Все фигуры по пояс или крупные портреты, помещаются в квадрат, **прозрачный фон**, без нарисованных круглых рамок.
 - Круг человека рисуется CSS **за персонажем**; робот выводится без круга и может слегка выступать за силуэт условного аватара.
 - Атлас формируется из проверенных отдельных прозрачных изображений, если генератор плохо соблюдает точную сетку. В итоговой поставке всё равно **один спрайт**.
 
 **Промпт для исходных персонажей / референс-листа:**
 
-> Design one coherent set of exactly 30 distinct, charming, age-neutral arcade character portraits for the same classroom game. Art direction: [СТИЛЬ РЕФЕРЕНСА]. Character 01 is a recognizable computer/robot opponent; characters 02–30 are varied human contestants with clear silhouettes, balanced visual diversity, consistent head size, lighting and perspective. Each character occupies a separate transparent square cell in a precisely aligned 6-column by 5-row atlas, with no overlap, labels, backgrounds, circles, borders or text. The robot is visually distinctive and allowed a slightly taller silhouette. Deliver transparent PNG; each portrait must be independently crop-friendly.
+> Design one coherent set of exactly 30 distinct, charming, age-neutral arcade character portraits for the same classroom game. Art direction: [СТИЛЬ РЕФЕРЕНСА]. Character 01 is a computer/robot opponent; characters 02–21 are twenty different girls and characters 22–30 are nine different boys with clear silhouettes, balanced visual diversity, consistent head size, lighting and perspective. Each character occupies a separate transparent square cell in a precisely aligned 6-column by 5-row atlas, with no overlap, labels, backgrounds, circles, borders or text. The robot is visually distinctive and allowed a slightly taller silhouette. Deliver transparent PNG; each portrait must be independently crop-friendly.
+
+Подробный промпт и техническая раскладка: [05-character-atlas-prompt.md](05-character-atlas-prompt.md).
 
 ## 4. Общие ачивки — 1 атлас
 
